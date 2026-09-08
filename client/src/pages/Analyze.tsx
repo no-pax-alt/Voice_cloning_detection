@@ -12,6 +12,7 @@ import {
 import { useLocation } from "wouter";
 import { analysisStages } from "@/lib/mockData";
 import { Button, SectionEyebrow, useToast, Waveform } from "@/components/Shared";
+import LiveRecorder from "@/components/LiveRecorder";
 import { analyzeVoice } from "@/lib/api/voiceAnalysis";
 import {
   getAudioDuration,
@@ -152,6 +153,8 @@ export default function Analyze() {
           Live model
         </div>
       </div>
+
+      <LiveRecorder />
 
       <div className="grid gap-5 lg:grid-cols-[1.4fr_.8fr]">
         <section className="panel p-5 lg:p-7">
@@ -432,3 +435,4 @@ export default function Analyze() {
     </div>
   );
 }
+
