@@ -9,6 +9,7 @@ import {
   useToast,
 } from "@/components/Shared";
 import { getStoredAnalysis } from "@/lib/api/analysisStore";
+import { downloadReport } from "@/lib/api/report";
 
 function ResultStat({
   label,
@@ -113,20 +114,52 @@ export default function AnalysisResult() {
   const displayResult = isFake ? "AI Detected" : "Likely Human";
 
   const share = async () => {
+    const shareData = {
+      title: "VoiceGuard Analysis Result",
+      text: `VoiceGuard analysis: ${result.prediction} · Risk ${result.risk_level} · Action ${result.action}`,
+      url: window.location.href,
+    };
+
     try {
-      await navigator.clipboard?.writeText(window.location.href);
+      if (navigator.share) {
+        await navigator.share(shareData);
+
+        notify(
+          "Report shared",
+          "The analysis result was shared successfully.",
+          "success"
+        );
+
+        return;
+      }
+
+      await navigator.clipboard.writeText(window.location.href);
 
       notify(
         "Result link copied",
         "The analysis result URL has been copied.",
-        "info"
+        "success"
       );
-    } catch {
-      notify(
-        "Unable to copy link",
-        "Copy the current browser URL manually.",
-        "warning"
-      );
+    } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") {
+        return;
+      }
+
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+
+        notify(
+          "Result link copied",
+          "The analysis result URL has been copied instead.",
+          "info"
+        );
+      } catch {
+        notify(
+          "Unable to share",
+          "Copy the current browser URL manually.",
+          "warning"
+        );
+      }
     }
   };
 
@@ -154,18 +187,19 @@ export default function AnalysisResult() {
 
         <div className="flex items-center gap-2">
           <Button
-            variant="secondary"
-            onClick={() =>
-              notify(
-                "Report export",
-                "Report export will be available through the reporting workflow.",
-                "info"
-              )
-            }
-          >
-            <Download size={14} />
-            Download report
-          </Button>
+  variant="secondary"
+  onClick={() => {
+    downloadReport(analysis);
+    notify(
+      "Report downloaded",
+      "The VoiceGuard analysis report has been downloaded.",
+      "success"
+    );
+  }}
+>
+  <Download size={14} />
+  Download report
+</Button>
 
           <Button variant="secondary" onClick={share}>
             <Share2 size={14} />
@@ -363,9 +397,9 @@ export default function AnalysisResult() {
             </h2>
 
             <p className="mt-4 text-sm leading-6 text-[#9aa59f]">
-              The model result has been passed to the security
-              risk engine. The resulting action is based on the
-              detector prediction and confidence score.
+              The detector result is evaluated together with audio
+              reliability before the security risk engine determines
+              the final risk level and recommended action.
             </p>
 
             <div className="mt-5 border-l-2 border-[#ff6a5f] bg-[#ff6a5f]/[.06] px-4 py-3">
@@ -421,6 +455,19 @@ export default function AnalysisResult() {
                   result.verification_required
                     ? result.verification_method
                     : "Not required"
+                }
+              />
+              <MetadataRow
+                label="Decision source"
+                value={riskDecision.decision_source ?? "BASE_RISK_ENGINE"}
+              />
+
+              <MetadataRow
+                label="Reliability adjustment"
+                value={
+                  riskDecision.reliability_adjustment
+                    ? "Applied"
+                    : "Not applied"
                 }
               />
             </div>
@@ -520,6 +567,12 @@ function ShieldIcon() {
     </svg>
   );
 }
+
+
+
+
+
+
 
 
 
