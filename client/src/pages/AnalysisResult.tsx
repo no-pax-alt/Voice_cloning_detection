@@ -138,6 +138,8 @@ export default function AnalysisResult() {
   const processingTime = `${(
     analysis.processingTime / 1000
   ).toFixed(2)}s`;
+  const audioQuality = result.audio_quality;
+  const riskDecision = result.risk;
 
   return (
     <div className="mx-auto max-w-[1250px] animate-page">
@@ -270,6 +272,40 @@ export default function AnalysisResult() {
       </section>
 
       <div className="mt-5 grid gap-5 lg:grid-cols-[1.2fr_.8fr]">
+        <section className="mt-5 border border-white/8 bg-white/[.02] p-4 lg:col-span-2">
+          <SectionEyebrow>
+            Audio reliability
+          </SectionEyebrow>
+
+          <div className="mt-4 grid gap-4 sm:grid-cols-3">
+            <ResultStat
+              label="Quality"
+              value={audioQuality.quality}
+            />
+
+            <ResultStat
+              label="Sample rate"
+              value={`${audioQuality.sample_rate} Hz`}
+            />
+
+            <ResultStat
+              label="Channels"
+              value={String(audioQuality.channels)}
+            />
+          </div>
+
+          <div className="mt-4">
+            <p className="text-[10px] uppercase tracking-[.14em] text-[#69756f]">
+              Reliability flags
+            </p>
+
+            <p className="mt-2 font-mono text-xs font-semibold text-[#dce4df]">
+              {audioQuality.flags.length > 0
+                ? audioQuality.flags.join(", ")
+                : "None"}
+            </p>
+          </div>
+        </section>
         <section className="panel p-5 lg:p-6">
           <SectionEyebrow>
             Model assessment
@@ -484,4 +520,10 @@ function ShieldIcon() {
     </svg>
   );
 }
+
+
+
+
+
+
 

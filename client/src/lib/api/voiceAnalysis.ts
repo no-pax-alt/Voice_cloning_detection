@@ -1,3 +1,26 @@
+﻿export interface AudioQuality {
+  quality: "GOOD" | "DEGRADED" | "POOR";
+  duration_seconds: number;
+  sample_rate: number;
+  channels: number;
+  rms: number;
+  peak_amplitude: number;
+  silence_ratio: number;
+  clipping_ratio: number;
+  flags: string[];
+}
+
+export interface RiskDecision {
+  risk_level: "LOW" | "MEDIUM" | "HIGH";
+  action: "ALLOW" | "VERIFY" | "BLOCK";
+  message: string;
+  verification_required: boolean;
+  verification_method: string;
+  decision_source?: string;
+  reliability_adjustment?: boolean;
+  quality_flags?: string[];
+}
+
 export interface VoiceAnalysisResponse {
   success: boolean;
   prediction: "REAL" | "FAKE";
@@ -6,6 +29,9 @@ export interface VoiceAnalysisResponse {
   original_percentage: number;
   fake_percentage: number;
   confidence: number;
+  decision_threshold: number;
+  audio_quality: AudioQuality;
+  risk: RiskDecision;
   risk_level: "LOW" | "MEDIUM" | "HIGH";
   action: "ALLOW" | "VERIFY" | "BLOCK";
   message: string;
