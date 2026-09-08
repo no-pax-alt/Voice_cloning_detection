@@ -225,8 +225,16 @@ export default defineConfig({
     host: true,
     proxy: {
       "/api": {
-        target: "http://127.0.0.1:8001",
+        target: "http://127.0.0.1:8000",
         changeOrigin: true,
+        configure: (proxy) => {
+          proxy.on("proxyReq", (proxyReq) => {
+            const apiKey = process.env.VOICEGUARD_API_KEY;
+            if (apiKey) {
+              proxyReq.setHeader("X-API-Key", apiKey);
+            }
+          });
+        },
       },
     },
     allowedHosts: [
@@ -244,5 +252,7 @@ export default defineConfig({
     },
   },
 });
+
+
 
 
