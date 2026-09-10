@@ -2,7 +2,7 @@ import express from "express";
 import { createServer } from "http";
 import path from "path";
 import { fileURLToPath } from "url";
-import { buildDemoAnalysis } from "./analysis";
+import { buildDemoAnalysis, getAnalysis } from "./analysis";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -29,6 +29,15 @@ async function startServer() {
         message: "Unable to process the analysis request.",
       });
     }
+  });
+
+  app.get("/api/analysis/:id", (req, res) => {
+    const result = getAnalysis(req.params.id);
+    if (!result) {
+      res.status(404).json({ error: "ANALYSIS_NOT_FOUND" });
+      return;
+    }
+    res.status(200).json(result);
   });
 
   // Serve static files from dist/public in production
