@@ -1,12 +1,14 @@
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ToastProvider } from "./components/Shared";
 import "./phase2-visual-foundation.css";
+import "./security-analytics.css";
 import App from "./voiceguard";
 import DashboardPage from "./pages/DashboardPage";
 import LiveCallPage from "./pages/LiveCallPage";
 import AnalysisPage from "./pages/AnalysisPage";
 import ForensicsPage from "./pages/ForensicsPage";
 import SecurityHistoryPage from "./pages/SecurityHistoryPage";
+import SecurityAnalyticsPage from "./pages/SecurityAnalyticsPage";
 
 function Phase3Routes() {
   const path = window.location.pathname;
@@ -15,6 +17,7 @@ function Phase3Routes() {
   if (path === "/migration/analyze") return <AnalysisPage />;
   if (path === "/migration/forensics") return <ForensicsPage />;
   if (path === "/migration/history") return <SecurityHistoryPage />;
+  if (path === "/migration/analytics") return <SecurityAnalyticsPage />;
   return <App />;
 }
 
