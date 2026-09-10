@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 import { AlertTriangle, CheckCircle2, PhoneOff, ShieldAlert, ShieldCheck, UserCheck } from "lucide-react";
 import { SecurityShell } from "../components/security/SecurityShell";
 import { Badge, Metric, Panel, RiskRing, SectionHead, Waveform } from "../components/security/SecurityPrimitives";
@@ -11,7 +11,7 @@ export default function LiveCallPage() {
   const critical = call.combinedRisk >= 90;
   const verifying = call.state === "VERIFYING";
 
-  async function handleVerify(event: React.FormEvent<HTMLFormElement>) {
+  async function handleVerify(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!/^\d{6}$/.test(otp)) return;
     const verified = await verifyOTP(otp);
