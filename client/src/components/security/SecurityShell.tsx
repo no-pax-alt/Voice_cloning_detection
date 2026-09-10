@@ -1,5 +1,6 @@
 import type React from "react";
 import { Activity, Bell, Shield } from "lucide-react";
+import { SecurityNav } from "./SecurityNav";
 
 export function SecurityShell({ title, eyebrow = "SECURITY OPERATIONS", children }: { title: string; eyebrow?: string; children: React.ReactNode }) {
   return (
@@ -7,10 +8,7 @@ export function SecurityShell({ title, eyebrow = "SECURITY OPERATIONS", children
       <aside className="sidebar">
         <div className="brand"><div className="brand-mark"><Shield size={18} /></div><div><b>VOICE<span>GUARD</span></b><small>REAL-TIME VOICE SECURITY</small></div></div>
         <div className="mode"><span className="dot" /> PHASE 3 <span>ARCHITECTURE</span></div>
-        <nav>
-          <div className="nav-group"><label>EXTRACTED PAGES</label><a href="/migration/dashboard">Overview</a><a href="/migration/live-call">Live Call</a></div>
-          <div className="nav-group"><label>PLATFORM</label><a href="/dashboard">Legacy command center</a></div>
-        </nav>
+        <SecurityNav />
         <div className="sidebar-foot"><div className="secure"><Activity size={14} /><span><b>Architecture active</b><small>Mock API boundary ready</small></span></div></div>
       </aside>
       <main className="main">
