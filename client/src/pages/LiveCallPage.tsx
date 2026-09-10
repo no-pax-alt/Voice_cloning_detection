@@ -1,0 +1,17 @@
+import { AlertTriangle, CheckCircle2, PhoneOff, ShieldAlert, ShieldCheck, UserCheck } from "lucide-react";
+import { SecurityShell } from "../components/security/SecurityShell";
+import { liveCall } from "../data/mockData";
+import { useSecurityMonitor } from "../hooks/useSecurityMonitor";
+
+export default function LiveCallPage() {
+  const { call, events, busy, terminate, requestVerification } = useSecurityMonitor(liveCall);
+  const critical = call.combinedRisk >= 90;
+  return <SecurityShell title="Live Call Monitor" eyebrow="REAL-TIME THREAT MONITORING">
+    <div className="section-head"><div><div className="eyebrow">EXTRACTED PAGE</div><h2>{call.caller}</h2><p>{call.id} · {call.duration} · signal quality {call.quality}</p></div><span className={`badge ${critical ? "badge-red" : "badge-cyan"}`}>{call.state}</span></div>
+    <div className="dashboard-grid">
+      <section className="panel"><div className="panel-head"><div><div className="eyebrow">LIVE AUDIO</div><h3>Voice telemetry</h3></div><span className="badge badge-green">MONITORING</span></div><div className="waveform waveform-large" aria-label="Live voice waveform">{Array.from({ length: 64 }, (_, i) => <i key={i} style={{ height: `${18 + ((i * 29) % 68)}%`, animationDelay: `${i * -0.07}s` }} />)}</div><div className="metrics"><section className="panel metric"><div className="metric-label">VOICE AUTHENTICITY</div><strong className="text-red">{call.voiceRisk}%</strong><span>{call.voice}</span></section><section className="panel metric"><div className="metric-label">INTENT RISK</div><strong className="text-amber">{call.intentRisk}%</strong><span>{call.intent}</span></section></div></section>
+      <section className="panel"><div className="panel-head"><div><div className="eyebrow">DECISION ENGINE</div><h3>Combined risk</h3></div><ShieldAlert size={18} /></div><div className="risk-ring" style={{ ["--risk" as string]: `${call.combinedRisk * 3.6}deg` }}><div><strong>{call.combinedRisk}%</strong><span>COMBINED RISK</span></div></div><div className="legend">{call.indicators.map(indicator => <div key={indicator}><i className="signal-red" />{indicator}</div>)}</div></section>
+    </div>
+    <section className="panel"><div className="panel-head"><div><div className="eyebrow">THREAT RESPONSE</div><h3>Operator controls</h3></div><span className="badge badge-red">{call.action}</span></div><div className="actions"><button className="button primary" disabled={busy || call.state === "TERMINATED"} onClick={terminate}><PhoneOff size={15} /> Terminate call</button><button className="button secondary" disabled={busy || call.state === "TERMINATED"} onClick={requestVerification}><UserCheck size={15} /> Request verification</button></div><div className="event-list">{events.map(event => <div className="event" key={event.id}><div className="event-icon red"><AlertTriangle /></div><div className="event-copy"><b>{event.message}</b><span>{new Date(event.timestamp).toLocaleTimeString()}</span></div><span className="badge badge-red">{event.severity}</span></div>)}{call.state === "TERMINATED" && <div className="event"><div className="event-icon green"><CheckCircle2 /></div><div className="event-copy"><b>Call termination requested successfully</b><span>Action routed through the Security API adapter.</span></div><span className="badge badge-green"><ShieldCheck size={12} /> TERMINATED</span></div>}</div></section>
+  </SecurityShell>;
+}
