@@ -6,6 +6,7 @@ import DashboardPage from "./pages/DashboardPage";
 import LiveCallPage from "./pages/LiveCallPage";
 import AnalysisPage from "./pages/AnalysisPage";
 import ForensicsPage from "./pages/ForensicsPage";
+import SecurityHistoryPage from "./pages/SecurityHistoryPage";
 
 function Phase3Routes() {
   const path = window.location.pathname;
@@ -13,6 +14,7 @@ function Phase3Routes() {
   if (path === "/migration/live-call") return <LiveCallPage />;
   if (path === "/migration/analyze") return <AnalysisPage />;
   if (path === "/migration/forensics") return <ForensicsPage />;
+  if (path === "/migration/history") return <SecurityHistoryPage />;
   return <App />;
 }
 
