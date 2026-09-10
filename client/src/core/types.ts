@@ -1,6 +1,7 @@
 export type VoiceAuthenticity = "REAL" | "AI-GENERATED" | "UNKNOWN" | "ANALYZING";
 export type CallIntent = "LEGITIMATE" | "SUSPICIOUS" | "POTENTIAL FRAUD" | "CONFIRMED FRAUD";
 export type RiskLevel = "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
+export type EventSeverity = RiskLevel | "INFO" | "WARNING";
 export type Action = "ALLOW" | "VERIFY" | "WARN" | "BLOCK" | "TERMINATE";
 export type CallState =
   | "IDLE"
@@ -48,8 +49,8 @@ export interface VerificationResult {
 
 export interface SecurityEvent {
   id: string;
-  type: "VOICE_DETECTED" | "INTENT_DETECTED" | "RISK_CHANGED" | "ACTION_TAKEN";
+  type: "VOICE_DETECTED" | "INTENT_DETECTED" | "RISK_CHANGED" | "ACTION_TAKEN" | "VERIFICATION";
   timestamp: string;
-  severity: RiskLevel;
+  severity: EventSeverity;
   message: string;
 }
