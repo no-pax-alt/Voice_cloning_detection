@@ -43,6 +43,8 @@ export interface VoiceAnalysisResult {
   };
 }
 
+const results = new Map<string, VoiceAnalysisResult>();
+
 /**
  * Stable response contract for the frontend/ML boundary.
  * Replace buildDemoAnalysis with the real AASIST/FastAPI inference call later
@@ -54,7 +56,7 @@ export function buildDemoAnalysis(input: AnalyzeRequest): VoiceAnalysisResult {
   const channels = Number(input.channels ?? 1);
   const processingTimeMs = 42;
 
-  return {
+  const result: VoiceAnalysisResult = {
     id: randomUUID(),
     fileName: input.fileName || "live-capture.wav",
     prediction: "REAL",
@@ -83,4 +85,11 @@ export function buildDemoAnalysis(input: AnalyzeRequest): VoiceAnalysisResult {
       version: "0.1.0",
     },
   };
+
+  results.set(result.id, result);
+  return result;
+}
+
+export function getAnalysis(id: string) {
+  return results.get(id) ?? null;
 }
