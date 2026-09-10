@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { inferenceProvider, type InferenceRequest } from "./inference";
 
 export type AnalysisPrediction = "REAL" | "FAKE";
 export type AnalysisRisk = "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
@@ -10,6 +11,7 @@ export interface AnalyzeRequest {
   sampleRate?: number;
   channels?: number;
   source?: "upload" | "live";
+  audioBase64?: string;
 }
 
 export interface VoiceAnalysisResult {
@@ -45,28 +47,56 @@ export interface VoiceAnalysisResult {
 
 const results = new Map<string, VoiceAnalysisResult>();
 
-/**
- * Stable response contract for the frontend/ML boundary.
- * Replace buildDemoAnalysis with the real AASIST/FastAPI inference call later
- * without changing the client-facing response shape.
- */
-export function buildDemoAnalysis(input: AnalyzeRequest): VoiceAnalysisResult {
+function deriveRisk(fakePercentage: number): AnalysisRisk {
+  if (fakePercentage >= 90) return "CRITICAL";
+  if (fakePercentage >= 70) return "HIGH";
+  if (fakePercentage >= 40) return "MEDIUM";
+  return "LOW";
+}
+
+function deriveAction(risk: AnalysisRisk): AnalysisAction {
+  if (risk === "CRITICAL") return "BLOCK";
+  if (risk === "HIGH" || risk === "MEDIUM") return "VERIFY";
+  return "ALLOW";
+}
+
+export async function buildAnalysis(input: AnalyzeRequest): Promise<VoiceAnalysisResult> {
   const duration = Math.max(0, Number(input.durationSeconds ?? 3.2));
   const sampleRate = Number(input.sampleRate ?? 48000);
   const channels = Number(input.channels ?? 1);
-  const processingTimeMs = 42;
+
+  const inferenceRequest: InferenceRequest = {
+    fileName: input.fileName || "live-capture.wav",
+    source: input.source ?? "upload",
+    audioBase64: input.audioBase64,
+    durationSeconds: duration,
+    sampleRate,
+    channels,
+  };
+
+  const started = Date.now();
+  const inference = await inferenceProvider.analyze(inferenceRequest);
+  const processingTimeMs = inference.processingTimeMs ?? Date.now() - started;
+  const fakePercentage = Math.max(
+    0,
+    Math.min(100, inference.fakePercentage ?? (inference.prediction === "FAKE" ? inference.confidence * 100 : (1 - inference.confidence) * 100)),
+  );
+  const originalPercentage = Math.max(0, Math.min(100, 100 - fakePercentage));
+  const riskLevel = deriveRisk(fakePercentage);
+  const action = deriveAction(riskLevel);
 
   const result: VoiceAnalysisResult = {
     id: randomUUID(),
-    fileName: input.fileName || "live-capture.wav",
-    prediction: "REAL",
-    confidence: 0.94,
-    fakePercentage: 6,
-    originalPercentage: 94,
-    riskLevel: "LOW",
-    action: "ALLOW",
-    message: "No strong synthetic-voice indicators detected in this demo inference.",
-    verificationRequired: false,
+    fileName: inferenceRequest.fileName,
+    prediction: inference.prediction,
+    confidence: Math.max(0, Math.min(1, inference.confidence)),
+    fakePercentage,
+    originalPercentage,
+    riskLevel,
+    action,
+    message: inference.message || (action === "ALLOW" ? "No strong synthetic-voice indicators detected." : "Synthetic-voice indicators require additional verification."),
+    verificationRequired: action === "VERIFY",
+    verificationMethod: action === "VERIFY" ? "CHALLENGE" : undefined,
     durationSeconds: duration,
     processingTimeMs,
     audioQuality: {
@@ -76,13 +106,13 @@ export function buildDemoAnalysis(input: AnalyzeRequest): VoiceAnalysisResult {
       flags: [],
     },
     riskDecision: {
-      decisionSource: "voice-authenticity-demo",
+      decisionSource: "voice-authenticity-model",
       reliabilityAdjustment: false,
     },
     pipeline: {
-      provider: "mock",
-      model: "voiceguard-demo",
-      version: "0.1.0",
+      provider: inference.provider ?? "external",
+      model: inference.model ?? "unknown",
+      version: inference.version ?? "unknown",
     },
   };
 
